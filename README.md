@@ -21,8 +21,6 @@ Built as part of research conducted in the Department of Management Sciences at 
 
 ---
 
-## How It Works
-
 | Step | Details |
 |------|---------|
 | **Input** | Procedure description (free text), OR room, specialty, patient type, surgical priority |
