@@ -15,7 +15,7 @@ Built as part of research conducted in the Department of Management Sciences at 
 ## Features
 
 - **Predict** surgery duration from procedure description, room, specialty, and priority
-- **Compare** model prediction against originally booked duration
+- **Compare** model prediction against the originally booked duration
 - **Explore** model performance metrics and top feature importances
 - **Interactive** sidebar inputs with instant results
 
@@ -33,4 +33,4 @@ Built as part of research conducted in the Department of Management Sciences at 
 
 ## Author
 
-**Gatik Gola** · MSCI 623 · University of Waterloo
+**Gatik Gola** · Department of Management Sciences · University of Waterloo
