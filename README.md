@@ -4,6 +4,8 @@ A machine learning application that predicts surgical procedure duration using a
 
 Built as part of research conducted in the Department of Management Sciences at the **University of Waterloo**.
 
+**Key contribution**: Obtained ~ 3min reduction in average scheduling error, applied across ~7,000 annual procedures, translates to an estimated $1–2M in annual OR cost savings — before accounting for cascade effects on overtime, cancellations, and resource utilization.
+
 ---
 
 ## Live Demo
