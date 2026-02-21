@@ -8,7 +8,7 @@ Built as part of research conducted in the Department of Management Sciences at 
 
 ## Live Demo
 
-> **[Launch the Streamlit App](https://surgery-duration-predictor-qlxrwbxqovglitrsclpi2a.streamlit.app/)
+> [Launch the Streamlit App](https://surgery-duration-predictor-qlxrwbxqovglitrsclpi2a.streamlit.app/)
 
 ---
 
