@@ -1,0 +1,34 @@
+# Raw data — not committed (sensitive health data)
+*.xlsx
+*.xls
+*.csv
+
+# Training script — requires raw data to run
+train_and_save.py
+
+# Jupyter checkpoints
+.ipynb_checkpoints/
+*.ipynb
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+dist/
+build/
+.env
+venv/
+.venv/
+
+# macOS
+.DS_Store
+~$*
+
+# PDFs / reports
+*.pdf
+
+# Results folder (local outputs)
+Results/
+
+# Streamlit cache
+.streamlit/
