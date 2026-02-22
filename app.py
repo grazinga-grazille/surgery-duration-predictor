@@ -42,6 +42,21 @@ st.markdown(
     }
     .predict-box h1 { font-size: 3.5rem; margin: 0.2rem 0; }
     .predict-box p  { color: #aac; margin: 0; }
+    /* Suggestion buttons in the sidebar — secondary buttons only */
+    section[data-testid="stSidebar"] button[data-testid="baseButton-secondary"] {
+        font-size: 0.7rem !important;
+        text-align: left !important;
+        border: 1px solid rgba(74, 144, 217, 0.35) !important;
+        background: rgba(26, 58, 92, 0.55) !important;
+        color: white !important;
+        padding: 2px 8px !important;
+        line-height: 1.3 !important;
+    }
+    section[data-testid="stSidebar"] button[data-testid="baseButton-secondary"]:hover {
+        background: #4A90D9 !important;
+        color: white !important;
+        border-color: #4A90D9 !important;
+    }
     </style>
     """,
     unsafe_allow_html=True,
@@ -69,15 +84,19 @@ def load_artifacts():
         _load("svd.pkl"),
         _load("feature_columns.pkl"),
         _load("categorical_values.pkl"),
+        _load("valid_combinations.pkl"),
+        _load("procedure_examples.pkl"),
         _load("model_stats.pkl"),
         _load("test_results.pkl"),
     )
 
 
 try:
-    rf_model, tfidf, svd, feature_columns, cat_values, model_stats, test_results = (
+    rf_model, tfidf, svd, feature_columns, cat_values, valid_combinations, procedure_examples, model_stats, test_results = (
         load_artifacts()
     )
+    patient_to_specialty      = valid_combinations["patient_to_specialty"]
+    patient_specialty_to_room = valid_combinations["patient_specialty_to_room"]
     model_loaded = True
 except FileNotFoundError:
     model_loaded = False
@@ -128,26 +147,74 @@ with st.sidebar:
 
     st.subheader("Procedure Details")
 
+    # ── Cascading dropdowns ───────────────────────────────────────────────────
     patient_type = st.selectbox("Patient Type", cat_values["PatientType"])
-    room = st.selectbox("Operating Room", cat_values["Roomdescription"])
-    specialty = st.selectbox(
-        "Procedure Specialty", cat_values["ProcedureSpecialtyDescription"]
+
+    valid_specialties = patient_to_specialty.get(
+        patient_type, cat_values["ProcedureSpecialtyDescription"]
     )
-    surgical_priority = st.slider(
-        "Surgical Priority", min_value=1, max_value=5, value=2,
-        help="1 = most urgent, 5 = elective"
+    specialty = st.selectbox("Procedure Specialty", valid_specialties)
+
+    valid_rooms = patient_specialty_to_room.get(
+        (patient_type, specialty), cat_values["Roomdescription"]
     )
-    description = st.text_area(
-        "Procedure Description",
-        placeholder="e.g. laparoscopic cholecystectomy with intraoperative cholangiogram",
-        height=110,
-    )
-    booked = st.number_input(
-        "Booked Duration (min) — optional",
-        min_value=0, max_value=600, value=0, step=5,
-        help="Enter the originally scheduled time to compare against the model."
+    room = st.selectbox("Operating Room", valid_rooms)
+
+    surgical_priority = st.radio(
+        "Surgical Priority",
+        options=[1, 2, 3, 4, 5],
+        index=1,
+        horizontal=True,
+        help="1 = most urgent, 5 = elective",
     )
 
+    st.divider()
+
+    # ── Procedure Recommendations ─────────────────────────────────────────────
+    import random
+
+    # Session state: shuffle seed + selected description
+    if "shuffle_seed" not in st.session_state:
+        st.session_state.shuffle_seed = 0
+    if "selected_proc" not in st.session_state:
+        st.session_state.selected_proc = ""
+    if "prev_specialty_rec" not in st.session_state:
+        st.session_state.prev_specialty_rec = ""
+
+    # Reset when specialty changes
+    if st.session_state.prev_specialty_rec != specialty:
+        st.session_state.shuffle_seed = 0
+        st.session_state.selected_proc = ""
+        st.session_state.prev_specialty_rec = specialty
+
+    # Editable text area — pre-filled when a suggestion is clicked
+    description = st.text_area(
+        "Procedure Description",
+        value=st.session_state.selected_proc,
+        placeholder="Type a description or pick a suggestion below",
+        height=90,
+    )
+
+    # Suggestions below the text area
+    sug_col, btn_col = st.columns([3, 1])
+    sug_col.caption("Suggestions")
+    if btn_col.button("🔀", help="Shuffle suggestions", use_container_width=True):
+        st.session_state.shuffle_seed += 1
+        st.session_state.selected_proc = ""
+        st.rerun()
+
+    pool = procedure_examples.get(specialty, [])
+    rng  = random.Random(st.session_state.shuffle_seed)
+    shown = rng.sample(pool, min(5, len(pool))) if pool else []
+
+    for proc in shown:
+        display = proc if len(proc) <= 42 else proc[:40] + "…"
+        display = display[0].upper() + display[1:] if display else display
+        if st.button(display, key=f"rec_{proc}", use_container_width=True):
+            st.session_state.selected_proc = proc
+            st.rerun()
+
+    st.divider()
     run = st.button("Predict Duration", type="primary", use_container_width=True)
 
 # ── Main area ─────────────────────────────────────────────────────────────────
@@ -185,39 +252,12 @@ with tab_predict:
                 <div class="predict-box">
                     <p>Predicted Surgery Duration</p>
                     <h1>{pred:.0f} <span style="font-size:1.8rem">min</span></h1>
-                    <p>{fmt_duration(pred)}</p>
+                    {f'<p style="font-size:1.1rem; margin-top:0.4rem; color:#ccd;">({fmt_duration(pred)})</p>' if pred >= 60 else ''}
                 </div>
                 """,
                 unsafe_allow_html=True,
             )
             st.write("")
-
-            if booked and booked > 0:
-                st.subheader("Model vs. Booked Duration")
-
-                diff_booked = pred - booked
-                pct_diff = (diff_booked / booked) * 100
-
-                m1, m2 = st.columns(2)
-                m1.metric("Model Prediction", f"{pred:.0f} min")
-                m2.metric(
-                    "Booked Duration", f"{booked} min",
-                    delta=f"{diff_booked:+.0f} min ({pct_diff:+.1f}%)",
-                    delta_color="inverse",
-                )
-
-                if abs(pct_diff) < 10:
-                    st.success("Model closely matches the booked duration (within 10%).")
-                elif diff_booked > 0:
-                    st.warning(
-                        f"Model predicts **{abs(diff_booked):.0f} min more** than booked. "
-                        "The schedule may be tight."
-                    )
-                else:
-                    st.info(
-                        f"Model predicts **{abs(diff_booked):.0f} min less** than booked. "
-                        "There may be scheduling slack."
-                    )
 
 # ── Tab 2: Model Performance ──────────────────────────────────────────────────
 with tab_model:
@@ -357,10 +397,10 @@ with tab_model:
     st.subheader("Model Configuration")
     config = {
         "Algorithm": "Random Forest Regressor",
-        "n_estimators": 100,
-        "max_depth": 15,
-        "min_samples_split": 10,
-        "min_samples_leaf": 5,
+        "n_estimators": "100",
+        "max_depth": "15",
+        "min_samples_split": "10",
+        "min_samples_leaf": "5",
         "max_features": "sqrt",
         "Target transform": "log(ActualDurationMinutes)",
         "Text features": "TF-IDF bigrams → TruncatedSVD (150 components)",
@@ -400,7 +440,31 @@ with tab_about:
         - The model outperforms booked duration benchmarks on test data.
         - Most outlier cases are **under-predicted** (surgery ran longer than expected).
         - Procedure description text (SVD embeddings) is the strongest predictor group.
+        """
+    )
 
+    st.markdown(
+        """
+        <div style="
+            background: linear-gradient(135deg, #1a3a5c 0%, #0f2440 100%);
+            border-left: 4px solid #e74c3c;
+            border-radius: 8px;
+            padding: 1rem 1.4rem;
+            margin: 0.5rem 0 1.2rem 0;
+        ">
+            <p style="margin:0 0 0.3rem 0; font-size:0.78rem; color:#aac; letter-spacing:0.05em; text-transform:uppercase;">Key Contribution</p>
+            <p style="margin:0; font-size:1rem; color:#f0f4f8; line-height:1.6;">
+                ~3 min reduction in average scheduling error, applied across ~7,000 annual procedures,
+                translates to an estimated <strong style="color:#e74c3c;">$1–2M in annual OR cost savings</strong>
+                — before accounting for cascade effects on overtime, cancellations, and resource utilization.
+            </p>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+    st.markdown(
+        """
         ---
         **Author:** Gatik Gola · University of Waterloo
         """
