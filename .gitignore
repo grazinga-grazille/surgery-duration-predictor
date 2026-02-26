@@ -1,4 +1,5 @@
-# Raw data — not committed (sensitive health data)
+# Raw data — never committed (confidential health data)
+data/
 *.xlsx
 *.xls
 *.csv
@@ -6,7 +7,7 @@
 # Training script — requires raw data to run
 train_and_save.py
 
-# Jupyter checkpoints
+# Jupyter notebooks and checkpoints
 .ipynb_checkpoints/
 *.ipynb
 
@@ -16,7 +17,10 @@ __pycache__/
 *.egg-info/
 dist/
 build/
+
+# Environment & secrets
 .env
+.env.*
 venv/
 .venv/
 
@@ -27,8 +31,8 @@ venv/
 # PDFs / reports
 *.pdf
 
-# Results folder (local outputs)
-Results/
+# Research outputs (local only)
+research/
 
-# Streamlit cache
-.streamlit/
+# Docker
+.dockerignore
