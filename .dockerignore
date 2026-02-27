@@ -6,6 +6,7 @@ data/
 
 # Training script — requires raw data to run
 train_and_save.py
+training/
 
 # Jupyter notebooks and checkpoints
 .ipynb_checkpoints/
@@ -17,6 +18,9 @@ __pycache__/
 *.egg-info/
 dist/
 build/
+.venv/
+*.__pycache__
+.git/
 
 # Environment & secrets
 .env
