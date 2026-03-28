@@ -4,6 +4,9 @@ data/
 *.xls
 *.csv
 
+# Precomputed aggregated summaries are safe to commit (no patient-level data)
+!precomputed/*.csv
+
 # Training script — requires raw data to run
 train_and_save.py
 
