@@ -236,8 +236,8 @@ with st.sidebar:
     run = st.button("Predict Duration", type="primary", use_container_width=True)
 
 # ── Main area ─────────────────────────────────────────────────────────────────
-tab_predict, tab_model, tab_about, tab_business = st.tabs(
-    ["🔮 Prediction", "📊 Model Performance", "ℹ️ About", "💼 Business Analysis"]
+tab_predict, tab_model, tab_business, tab_about = st.tabs(
+    ["🔮 Prediction", "📊 ML Analysis", "💼 Business Analysis",  "ℹ️ About"]
 )
 
 with tab_predict:
@@ -251,8 +251,8 @@ with tab_predict:
 with tab_model:
     model_performance.render(model_stats, test_results)
 
-with tab_about:
-    about.render()
-
 with tab_business:
     business_analysis.render()
+
+with tab_about:
+    about.render()

@@ -143,10 +143,9 @@ def render():
         "Quantifying the operational and financial impact of improved scheduling accuracy."
     )
 
-    fi_tab, ru_tab, di_tab = st.tabs([
+    fi_tab, ru_tab = st.tabs([
         "💰 Financial Impact",
         "🏥 Resource Utilization Impact",
-        "🔗 Downstream Impact",
     ])
 
     with fi_tab:
@@ -154,13 +153,6 @@ def render():
 
     with ru_tab:
         _render_resource_utilization()
-
-    with di_tab:
-        st.info(
-            "**Coming soon** — Downstream Impact analysis is under development. "
-            "This section will cover ICU/ward overflow, cancellation rates, and "
-            "patient wait-time cascade effects."
-        )
 
 
 # ── Chart helper ──────────────────────────────────────────────────────────────
@@ -208,36 +200,55 @@ def _render_financial_impact():
     m1.metric(
         "Total Baseline Cost",
         f"${sum(baseline_cost):,.0f}",
-        help="Sum of per-case costs using booked duration as the schedule.",
+        help=(
+            "Total net OR scheduling cost across all specialties using the originally "
+            "booked duration as the planned schedule. Each case is costed by how far "
+            "its actual duration deviated from the booked time — overtime at \$52.50 per min, "
+            "undertime (opportunity cost) at \$35 per min."
+        ),
     )
     m2.metric(
         "Total Predicted Cost",
         f"${sum(pred_cost):,.0f}",
-        help="Sum of per-case costs using model predictions as the schedule.",
+        help=(
+            "Total net OR scheduling cost if the model's predicted duration had been "
+            "used as the planned schedule instead of the booked duration. A lower value "
+            "than the baseline means the model's predictions lead to smaller deviations "
+            "from actual surgery times."
+        ),
     )
     m3.metric(
         "Net Cost Impact",
         f"${total_saved:+,.0f}",
-        delta="savings" if total_saved >= 0 else "additional cost",
+        delta="savings from model predictions" if total_saved >= 0 else "additional cost from model predictions",
         delta_color="normal" if total_saved >= 0 else "inverse",
+        help=(
+            "Difference between baseline cost and predicted cost (baseline − predicted). "
+            "A positive value means the model's schedule predictions reduce overall OR "
+            "scheduling cost compared to the original booked durations."
+        ),
     )
     st.divider()
 
     # ── Baseline chart ────────────────────────────────────────────────────────
-    st.markdown("#### Baseline OR Cost")
-    st.caption(caption)
-    _bar_chart(specialties, baseline_cost, _BLUE, "OR Cost ($)", "fi_baseline")
+    st.markdown("#### Baseline Net OR Cost by Specialty")
+    st.caption(
+        caption + " · Cost of scheduling deviations using the originally booked duration as the plan"
+    )
+    _bar_chart(specialties, baseline_cost, _BLUE, "Net OR Cost ($)", "fi_baseline")
 
     # ── Prediction chart ──────────────────────────────────────────────────────
-    st.markdown("#### Model Prediction OR Cost")
-    st.caption(caption)
-    _bar_chart(specialties, pred_cost, _TEAL, "OR Cost ($)", "fi_predicted")
+    st.markdown("#### Model Prediction Net OR Cost by Specialty")
+    st.caption(
+        caption + " · Cost of scheduling deviations using the model's predicted duration as the plan"
+    )
+    _bar_chart(specialties, pred_cost, _TEAL, "Net OR Cost ($)", "fi_predicted")
 
     # ── Cost impact chart ─────────────────────────────────────────────────────
-    st.markdown("#### Cost Impact of Model Predictions")
+    st.markdown("#### Cost Savings by Specialty")
     st.caption(
-        "Positive = model reduces scheduling cost · "
-        "Negative = model increases scheduling cost"
+        "How much the model reduces (or increases) net OR scheduling cost per specialty "
+        "compared to the baseline. Green = model saves money · Red = model adds cost"
     )
     savings_colors = ["#27AE60" if s >= 0 else "#E74C3C" for s in savings]
     fig_sav = go.Figure(go.Bar(
@@ -247,14 +258,14 @@ def _render_financial_impact():
         text=[f"${s:+,.0f}" for s in savings],
         textposition="outside",
         cliponaxis=False,
-        hovertemplate="<b>%{x}</b><br>Savings: $%{y:+,.0f}<extra></extra>",
+        hovertemplate="<b>%{x}</b><br>Cost Savings: $%{y:+,.0f}<extra></extra>",
     ))
     fig_sav.add_hline(y=0, line_color="#95A5A6", line_width=1)
     fig_sav.update_layout(
         height=420,
         margin=dict(t=60, b=20, l=10, r=10),
         xaxis_title="Surgical Specialty",
-        yaxis_title="Cost Savings ($)",
+        yaxis_title="Cost Savings vs. Baseline ($)",
         plot_bgcolor="rgba(0,0,0,0)",
         paper_bgcolor="rgba(0,0,0,0)",
         font=dict(color="#f0f4f8"),

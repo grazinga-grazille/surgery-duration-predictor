@@ -142,18 +142,3 @@ def render(model_stats, test_results):
         f"Most challenging: **{worst['Specialty']}** ({worst['MAE (min)']:.1f} min MAE)"
     )
 
-    st.divider()
-    st.subheader("Model Configuration")
-    config = {
-        "Algorithm": "Random Forest Regressor",
-        "n_estimators": "100",
-        "max_depth": "15",
-        "min_samples_split": "10",
-        "min_samples_leaf": "5",
-        "max_features": "sqrt",
-        "Target transform": "log(ActualDurationMinutes)",
-        "Text features": "TF-IDF bigrams → TruncatedSVD (150 components)",
-        "Train / Test split": "80 / 20",
-        "Training samples": f"{model_stats['train_size']:,}",
-    }
-    st.table(pd.DataFrame(config.items(), columns=["Parameter", "Value"]))

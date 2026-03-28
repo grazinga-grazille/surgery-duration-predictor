@@ -49,9 +49,12 @@ def render():
         ">
             <p style="margin:0 0 0.3rem 0; font-size:0.78rem; color:#aac; letter-spacing:0.05em; text-transform:uppercase;">Key Contribution</p>
             <p style="margin:0; font-size:1rem; color:#f0f4f8; line-height:1.6;">
-                ~3 min reduction in average scheduling error, applied across ~7,000 annual procedures,
-                translates to an estimated <strong style="color:#e74c3c;">$350,000 in annual OR cost savings</strong>
-                — before accounting for cascade effects on overtime, cancellations, and resource utilization.
+                Applied to 7,872 surgeries across 12 specialties (Mar 2024 – Mar 2025), replacing booked
+                durations with model predictions reduces net OR scheduling cost by
+                <strong style="color:#e74c3c;">$342,333</strong> — from $11.2M to $10.9M.
+                Recovered schedule time creates capacity for
+                <strong style="color:#e74c3c;">176 additional high-volume procedures</strong>
+                without extending OR hours.
             </p>
         </div>
         """,
