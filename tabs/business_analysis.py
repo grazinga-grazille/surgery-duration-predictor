@@ -9,6 +9,7 @@ Cost formula (applied per case, always positive):
   net <  0  (under-ran) →  abs(net) × $35
 """
 
+import os
 import pickle
 import re
 
@@ -33,6 +34,22 @@ _CUSTOM_STOP_WORDS = [
     "procedure", "status", "post", "bilateral", "left", "right", "well",
     "tolerated", "bx", "fx", "tx", "dx", "hx", "sx", "ex",
 ]
+
+
+# ── Data availability check ───────────────────────────────────────────────────
+
+def _data_available() -> bool:
+    return os.path.exists(_DATA_PATH)
+
+
+def _show_data_unavailable():
+    st.warning(
+        f"**Data file not found** — `{_DATA_PATH}` is required for this analysis "
+        "but is not present in this deployment (confidential health data is excluded "
+        "from the repository). To view this section, run the app locally with the "
+        "source data file in the project root directory.",
+        icon="🔒",
+    )
 
 
 # ── Cost formula ──────────────────────────────────────────────────────────────
@@ -185,6 +202,9 @@ def _bar_chart(specialties, values, color, y_title, key):
 # ── Financial impact renderer ─────────────────────────────────────────────────
 
 def _render_financial_impact():
+    if not _data_available():
+        _show_data_unavailable()
+        return
     data = _load_comparison_data()
     specialties   = data["ProcedureSpecialtyDescription"].tolist()
     baseline_cost = data["baseline_cost"].tolist()
@@ -365,6 +385,9 @@ def _load_resource_utilization_data():
 # ── Resource Utilization — renderer ──────────────────────────────────────────
 
 def _render_resource_utilization():
+    if not _data_available():
+        _show_data_unavailable()
+        return
     summary, _ = _load_resource_utilization_data()
 
     specialties  = summary["ProcedureSpecialtyDescription"].tolist()
