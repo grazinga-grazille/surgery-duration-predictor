@@ -49,9 +49,9 @@ def render():
         ">
             <p style="margin:0 0 0.3rem 0; font-size:0.78rem; color:#aac; letter-spacing:0.05em; text-transform:uppercase;">Key Contribution</p>
             <p style="margin:0; font-size:1rem; color:#f0f4f8; line-height:1.6;">
-                Applied to 7,872 surgeries across 12 specialties (Mar 2024 – Mar 2025), replacing booked
-                durations with model predictions reduces net OR scheduling cost by
-                <strong style="color:#e74c3c;">$342,333</strong> — from $11.2M to $10.9M.
+                Applied to 7,804 surgeries across 12 specialties (Mar 2024 – Mar 2025), replacing booked
+                durations with model predictions reduced the net OR scheduling cost by
+                <strong style="color:#e74c3c;">$363,898</strong> — from $8.1M to $7.8M.
                 Recovered schedule time creates capacity for
                 <strong style="color:#e74c3c;">176 additional high-volume procedures</strong>
                 without extending OR hours.
