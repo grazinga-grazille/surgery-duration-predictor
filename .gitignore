@@ -4,8 +4,8 @@ data/
 *.xls
 *.csv
 
-# Precomputed aggregated summaries are safe to commit (no patient-level data)
-!precomputed/*.csv
+# Precomputed folder — data now stored in Streamlit Secrets, not committed
+precomputed/
 
 # Training script — requires raw data to run
 train_and_save.py
@@ -24,6 +24,7 @@ build/
 # Environment & secrets
 .env
 .env.*
+.streamlit/secrets.toml
 venv/
 .venv/
 

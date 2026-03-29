@@ -1,19 +1,19 @@
 """
 tabs/business_analysis.py  —  Business Analysis tab
 
-Reads precomputed aggregated summaries from precomputed/ (no patient-level data).
+Reads precomputed aggregated summaries from Streamlit Secrets (no patient-level data).
 Cost formula used during precomputation (applied per case, always positive):
   net >= 0  (over-ran)  →  net      × $35 × 1.5
   net <  0  (under-ran) →  abs(net) × $35
 """
+
+import io
 
 import pandas as pd
 import plotly.graph_objects as go
 import streamlit as st
 
 # ── Constants ─────────────────────────────────────────────────────────────────
-_FI_PATH   = "precomputed/financial_impact.csv"              # aggregated, committed
-_RU_PATH   = "precomputed/resource_utilization_summary.csv"  # aggregated, committed
 DATE_START = "2024-03-01"
 DATE_END   = "2025-03-31"
 _RATE      = 35.0
@@ -27,14 +27,14 @@ _TEAL = "#1ABC9C"
 
 @st.cache_data(show_spinner="Loading analysis data …")
 def _load_comparison_data() -> pd.DataFrame:
-    """Read precomputed financial impact summary (no patient-level data)."""
-    return pd.read_csv(_FI_PATH)
+    """Read precomputed financial impact summary from Streamlit Secrets."""
+    return pd.read_csv(io.StringIO(st.secrets["financial_impact_csv"]))
 
 
 @st.cache_data(show_spinner="Loading resource utilization data …")
 def _load_resource_utilization_data() -> pd.DataFrame:
-    """Read precomputed resource utilization summary (no patient-level data)."""
-    return pd.read_csv(_RU_PATH)
+    """Read precomputed resource utilization summary from Streamlit Secrets."""
+    return pd.read_csv(io.StringIO(st.secrets["resource_utilization_csv"]))
 
 
 # ── Tab renderer ──────────────────────────────────────────────────────────────
